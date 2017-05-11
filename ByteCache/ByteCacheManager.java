@@ -38,7 +38,7 @@ public class ByteCacheManager {
         return domain.startsWith("www.")? domain.substring(4): domain;
     }
 
-    public void insertURLHash(String url, DataToHashList dthl, String contenttype) {
+    public synchronized void insertURLHash(String url, DataToHashList dthl, String contenttype) {
         String  domain;
         try {
             domain = getDomainName(url);
@@ -58,7 +58,7 @@ public class ByteCacheManager {
         }
     }
 
-    public void show(BufferedWriter outf) {
+    public void show() {
         BufferedWriter bw = null;
         FileWriter fw = null;
         Iterator it = domainToHashInfo.entrySet().iterator();
@@ -74,7 +74,7 @@ public class ByteCacheManager {
                 String domain = (String) me.getKey();
                 HashInfo hi = (HashInfo) me.getValue();
                 System.out.println(domain + ":");
-                outf.write(domain + ":\n");
+                bw.write(domain + ":\n");
                 hi.show(bw);
             }
         } catch (IOException exc) {

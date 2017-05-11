@@ -59,11 +59,19 @@ public class HashInfo {
     public void show(BufferedWriter outf) throws IOException {
         Set set = hashInfo.entrySet();
         Iterator i = set.iterator();
+        int count=0;
+        int numHashes = 0;
         while (i.hasNext()) {
             Map.Entry me = (Map.Entry) i.next();
             TypeTimeCount ttc = (TypeTimeCount) me.getValue();
-            outf.write("\t"+me.getKey()+ " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
-            System.out.println("\t"+me.getKey()+ " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
+            numHashes++;
+            count = ttc.getCount();
+            if (count > 0) {
+                outf.write("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
+                System.out.println("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
+            }
         }
+        outf.write("\t number of hashes: " + numHashes + "\n");
+        System.out.println("\t number of hashes: " + numHashes);
     }
 }

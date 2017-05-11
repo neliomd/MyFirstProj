@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * Created by Sudhir_Kumar on 5/9/2017.
  */
 public class DataToHashList {
-    public static final int bufferSize = 16;
+    public static final int bufferSize = 1024;
 
     public ArrayList<byte []>   data;
     public ArrayList<String>    hashList;
@@ -25,6 +25,16 @@ public class DataToHashList {
         currentBuffer = new byte[bufferSize];
         pos = 0;
         data.add(currentBuffer);
+    }
+
+    public void reset() {
+        int     i;
+        for (i=data.size(); i>0; i--) {
+            data.remove(i-1);
+        }
+        for (i=hashList.size(); i>0; i--) {
+            hashList.remove(i-1);
+        }
     }
 
     public void insertBuffer(byte[] newBuffer, int buflen) {
@@ -55,14 +65,17 @@ public class DataToHashList {
         System.out.println("data.size():" + data.size());
     }
 
-    public void computeHashlist() throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-
-        for (byte[] block : data) {
-            md.update(block, 0, block.length);
-            byte[] digest = md.digest();
-            String myhash = DatatypeConverter.printHexBinary(digest).toUpperCase();
-            hashList.add(myhash);
+    public void computeHashlist() {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            for (byte[] block : data) {
+                md.update(block, 0, block.length);
+                byte[] digest = md.digest();
+                String myhash = DatatypeConverter.printHexBinary(digest).toUpperCase();
+                hashList.add(myhash);
+            }
+        } catch (NoSuchAlgorithmException nsa){
+            nsa.printStackTrace();
         }
     }
 

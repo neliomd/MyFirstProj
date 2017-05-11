@@ -1,14 +1,11 @@
+import ByteCache.ByteCacheManager;
+import ByteCache.DataToHashList;
 import httpstream.HttpInputStream;
 import httpstream.HttpOutputStream;
 import httpstream.exceptions.HeadersSizeExceedException;
 import httpstream.exceptions.RequestResponseLineSizeExceedException;
 
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -51,12 +48,15 @@ import org.bouncycastle.operator.OperatorCreationException;
 import MITM.DataStructures.CertificateGetParams;
 
 
+
 public class ProxyServer {
 
 	int _port;
 	ServerSocket _serverSocket;
 
 	CertificateManager _certificateManager;
+	private static ThreadLocal<DataToHashList> _dthl = new ThreadLocal<DataToHashList>();
+	public ByteCacheManager 	_bcm = ByteCacheManager.getInstance();
 	
 	public ProxyServer(int port, CertificateManager certificateManager) {
 		this._port = port;
@@ -187,12 +187,13 @@ public class ProxyServer {
 				String responseLine = webServerHttpInputStream.readRequestLine();
 				Map<String, String> responseHeaders = new HashMap<String, String>();
 				webServerHttpInputStream.readHeaders(responseHeaders);
+				System.out.println("Response Header:\n"+ responseHeaders);
 
 				clientHttpOutputStream.writeLine(responseLine);
 				clientHttpOutputStream.writeHeaders(responseHeaders);
 
 				handleResponseBody(responseHeaders, clientHttpOutputStream,
-						webServerHttpInputStream, buffer);
+						webServerHttpInputStream, buffer, requestLinePartsStrings[1]);
 
 			} else if (httpMethod.equals("CONNECT")) {
 
@@ -245,7 +246,7 @@ public class ProxyServer {
 
 				isLocked = true;
 			}
-
+			_bcm.show();
 		}
 
 	}
@@ -296,27 +297,35 @@ public class ProxyServer {
 
 	int handleResponseBody(Map<String, String> responseHeaders,
 			HttpOutputStream clientHttpOutputStream,
-			HttpInputStream webServerHttpInputStream, byte[] buffer)
+			HttpInputStream webServerHttpInputStream, byte[] buffer, String url)
 			throws IOException, RequestResponseLineSizeExceedException {
 
 		int returnValue = 0;
+		String ctype = "";
+		_dthl.set(new DataToHashList());
+
+		if (responseHeaders.containsKey("Content-Type")) {
+			ctype = responseHeaders.get("Content-Type");
+		}
 
 		if (responseHeaders.containsKey("Transfer-Encoding")
 				&& responseHeaders.get("Transfer-Encoding").trim()
 						.equals("chunked")) {
 			returnValue = handleChunkedBody(clientHttpOutputStream,
-					webServerHttpInputStream, buffer);
+					webServerHttpInputStream, buffer, ctype);
 		} else {
 			returnValue = handleNormalBody(clientHttpOutputStream,
-					webServerHttpInputStream, buffer, responseHeaders);
+					webServerHttpInputStream, buffer, responseHeaders, ctype);
 		}
-
+		_dthl.get().computeHashlist();
+		_bcm.insertURLHash(url, _dthl.get(), ctype);
+		_dthl.get().reset();
 		return returnValue;
 	}
 
 	int handleNormalBody(HttpOutputStream clientHttpOutputStream,
 			HttpInputStream webServerHttpInputStream, byte[] buffer,
-			Map<String, String> responseHeaders) throws IOException {
+			Map<String, String> responseHeaders, String ctype) throws IOException {
 
 		if (responseHeaders.containsKey("Content-Length")) {
 			String value = responseHeaders.get("Content-Length");
@@ -333,7 +342,7 @@ public class ProxyServer {
 	}
 
 	int handleChunkedBody(HttpOutputStream clientHttpOutputStream,
-			HttpInputStream webServerHttpInputStream, byte[] buffer)
+			HttpInputStream webServerHttpInputStream, byte[] buffer, String ctype)
 			throws IOException, RequestResponseLineSizeExceedException {
 		// Read Chunked Body.
 		int contentLength = 0;
@@ -371,13 +380,14 @@ public class ProxyServer {
 			throws IOException {
 
 		int bufferSize = buffer.length;
+		int totalbytes = 0;
 		while (count > 0) {
 			int bytesRead = webServerHttpInputStream.read(buffer, 0,
 					Math.min(count, bufferSize));
 
 			if (bytesRead <= 0)
 				break;
-
+			_dthl.get().insertBuffer(buffer, bytesRead);
 			count -= bytesRead;
 			clientHttpOutputStream.write(buffer, 0, bytesRead);
 		}

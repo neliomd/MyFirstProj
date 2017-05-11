@@ -23,11 +23,8 @@ public class BCTester {
             buf[i] = (byte) (i+50);
         }
         dthl.insertBuffer(buf, 18);
-        try {
-            dthl.computeHashlist();
-        } catch (NoSuchAlgorithmException e){
-            e.printStackTrace();
-        }
+        dthl.computeHashlist();
+
         //E25885E9BA19A3AC262FD372CF89EA38
 
         BufferedWriter bw = null;
