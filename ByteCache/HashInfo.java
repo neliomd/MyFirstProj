@@ -68,9 +68,9 @@ public class HashInfo {
             TypeTimeCount ttc = (TypeTimeCount) me.getValue();
             numHashes++;
             count = ttc.getCount();
+            outf.write("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
             if (count > 0) {
                 matchedHashes++;
-                outf.write("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
                 System.out.println("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
             } else {
                 unMatchedHashes++;
