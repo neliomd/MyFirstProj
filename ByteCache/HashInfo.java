@@ -61,17 +61,23 @@ public class HashInfo {
         Iterator i = set.iterator();
         int count=0;
         int numHashes = 0;
+        int matchedHashes = 0;
+        int unMatchedHashes = 0;
         while (i.hasNext()) {
             Map.Entry me = (Map.Entry) i.next();
             TypeTimeCount ttc = (TypeTimeCount) me.getValue();
             numHashes++;
             count = ttc.getCount();
             if (count > 0) {
+                matchedHashes++;
                 outf.write("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
                 System.out.println("\t" + me.getKey() + " : " + ttc.getContentType() + " : " + ttc.getCount() + "\n");
+            } else {
+                unMatchedHashes++;
             }
         }
-        outf.write("\t number of hashes: " + numHashes + "\n");
-        System.out.println("\t number of hashes: " + numHashes);
+        outf.write("\t Number of hashes: " + numHashes + ", Matched:"+matchedHashes+ ", Unmatched:"+ unMatchedHashes+"\n");
+        System.out.println("\t Number of hashes: " + numHashes + ", Matched:"+matchedHashes+ ", Unmatched:"+ unMatchedHashes);
+
     }
 }
