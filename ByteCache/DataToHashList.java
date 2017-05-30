@@ -11,10 +11,11 @@ import java.util.ArrayList;
  * Created by Sudhir_Kumar on 5/9/2017.
  */
 public class DataToHashList {
-    public static final int bufferSize = 1024;
+    public static final int bufferSize = 4096;
 
     public ArrayList<byte []>   data;
     public ArrayList<String>    hashList;
+    public String domain;
 
     private byte[] currentBuffer;
     private int pos;
@@ -25,6 +26,7 @@ public class DataToHashList {
         currentBuffer = new byte[bufferSize];
         pos = 0;
         data.add(currentBuffer);
+        domain = "";
     }
 
     public void reset() {
@@ -35,6 +37,9 @@ public class DataToHashList {
         for (i=hashList.size(); i>0; i--) {
             hashList.remove(i-1);
         }
+    }
+    public void setDomain(String dm) {
+        domain = dm;
     }
 
     public void insertBuffer(byte[] newBuffer, int buflen) {
@@ -62,7 +67,7 @@ public class DataToHashList {
             }
             pos = j;
         }
-        System.out.println("data.size():" + data.size());
+        System.out.println(domain + " data.size():" + data.size());
     }
 
     public void computeHashlist() {

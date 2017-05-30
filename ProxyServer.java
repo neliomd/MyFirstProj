@@ -193,7 +193,7 @@ public class ProxyServer {
 				clientHttpOutputStream.writeHeaders(responseHeaders);
 
 				handleResponseBody(responseHeaders, clientHttpOutputStream,
-						webServerHttpInputStream, buffer, requestLinePartsStrings[1]);
+						webServerHttpInputStream, buffer, currentWebHost);
 
 			} else if (httpMethod.equals("CONNECT")) {
 
@@ -297,12 +297,13 @@ public class ProxyServer {
 
 	int handleResponseBody(Map<String, String> responseHeaders,
 			HttpOutputStream clientHttpOutputStream,
-			HttpInputStream webServerHttpInputStream, byte[] buffer, String url)
+			HttpInputStream webServerHttpInputStream, byte[] buffer, String domain)
 			throws IOException, RequestResponseLineSizeExceedException {
 
 		int returnValue = 0;
 		String ctype = "";
 		_dthl.set(new DataToHashList());
+		_dthl.get().setDomain(domain);
 
 		if (responseHeaders.containsKey("Content-Type")) {
 			ctype = responseHeaders.get("Content-Type");
@@ -318,7 +319,7 @@ public class ProxyServer {
 					webServerHttpInputStream, buffer, responseHeaders, ctype);
 		}
 		_dthl.get().computeHashlist();
-		_bcm.insertURLHash(url, _dthl.get(), ctype);
+		_bcm.insertURLHash(domain, _dthl.get(), ctype);
 		_dthl.get().reset();
 		return returnValue;
 	}

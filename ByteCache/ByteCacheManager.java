@@ -38,14 +38,15 @@ public class ByteCacheManager {
         return domain.startsWith("www.")? domain.substring(4): domain;
     }
 
-    public synchronized void insertURLHash(String url, DataToHashList dthl, String contenttype) {
-        String  domain;
-        try {
-            domain = getDomainName(url);
-        } catch (Exception exc) {
-            System.out.println("Invalid URL. Ignoring");
-            return;
-        }
+    public synchronized void insertURLHash(String domain, DataToHashList dthl, String contenttype) {
+        // Earlier, the first parameter was URL.
+        //String  domain;
+        //try {
+        //    domain = getDomainName(url);
+        //} catch (Exception exc) {
+        //    System.out.println("Invalid URL. Ignoring");
+        //    return;
+        //}
 
         HashInfo hi = domainToHashInfo.get(domain);
         if (hi == null) {
